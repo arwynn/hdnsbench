@@ -16,8 +16,10 @@ executable hdnsbench
   main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base >=4.6 && <4.8
                      , dns >= 1.4.5
                      , network >= 2.6
+                     , async >= 2.0
+                     , bytestring >= 0.10
   -- hs-source-dirs:      
   default-language:    Haskell2010
