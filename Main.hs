@@ -7,12 +7,15 @@ import Control.Monad
 import Control.Concurrent.Async
 import Data.List (unfoldr)
 import Data.DomainDB
+import Control.Exception as E
 
 lookupDomains :: ResolvSeed -> [(Domain,TYPE)] -> IO ()
 lookupDomains rs ds =
     withResolver rs $ \resolver -> do
-        forM_ ds $ \dn -> do
-            uncurry (DNS.lookup resolver) dn
+        forM_ ds $ \(dn, t) -> do
+            E.handle err $ DNS.lookup resolver dn t
+    where err :: SomeException -> IO (Either DNSError [RDATA])
+          err _ = return (Left ServerFailure)
 
 chunks n = takeWhile (not.null) . unfoldr (Just . splitAt n)
 
@@ -27,6 +30,5 @@ main = do
                        , resolvBufsize = 4096
                        , resolvSockType = Stream}
     rs <- makeResolvSeed rc
-    --mapConcurrently (lookupDomains rs) ds
-    mapM_ (lookupDomains rs) ds
+    mapConcurrently (lookupDomains rs) ds
     return ()
